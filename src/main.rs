@@ -1,3 +1,7 @@
+use tokio::{spawn, sync::{mpsc, oneshot, Mutex}};
+use std::{time::Duration, sync::Arc};
+use rand::{Rng, SeedableRng};
+
 #[derive(Debug)]
 enum Burger {
     BigMac,
@@ -11,7 +15,6 @@ enum Burger {
 enum Snack {
     Fries,
     Nuggets,
-    Salad,
 }
 
 #[derive(Debug)]
@@ -22,34 +25,101 @@ enum Drink {
     Lipton,
 }
 
+#[derive(Debug)]
 enum Size {
     Medium,
     Large,
 }
 
+#[derive(Debug)]
 enum ItemKind {
     Burger(Burger),
     Snack(Snack),
     Drink(Drink),
 }
 
+#[derive(Debug)]
+enum Station {
+    Grill,
+    Fryer,
+    Drink,
+}
+
+#[derive(Debug)]
 struct OrderLine {
     item: ItemKind,
     quantity: u8,
-    size: Option<Size>,
+    size: Size,
 }
 
+#[derive(Debug)]
 struct Order {
     id: u8,
     lines: Vec<OrderLine>,
 }
 
+#[derive(Debug)]
 struct PreparedItem {
     order_id: u8,
     item: ItemKind,
 }
 
-use rand::{Rng, SeedableRng};
+#[derive(Debug)]
+struct Job {
+    order_id: u8,
+    item_kind: ItemKind,
+    duration: Duration,
+    if_done: oneshot::Sender<PreparedItem>,
+}
+
+#[derive(Debug, Clone)]
+struct Kitchen {
+    grill_tx: mpsc::Sender<Job>,
+    fryer_tx: mpsc::Sender<Job>,
+    drink_tx: mpsc::Sender<Job>,
+}
+
+
+
+impl ItemKind {
+    fn base_time(&self) -> Duration {
+        match self {
+            ItemKind::Burger(burger) => match burger {
+                Burger::BigMac => Duration::from_secs(7),
+                Burger::Cheeseburger => Duration::from_secs(5),
+                Burger::McFish => Duration::from_secs(6),
+                Burger::McCrispy => Duration::from_secs(8),
+                Burger::McWrap => Duration::from_secs(4),
+            }
+            ItemKind::Snack(snack) => match snack {
+                Snack::Fries => Duration::from_secs(3),
+                Snack::Nuggets => Duration::from_secs(4),
+            }
+            ItemKind::Drink(_) => Duration::from_secs(1),
+        }
+    }
+
+    fn station(&self) -> Station {
+        match self {
+            ItemKind::Burger(_) => Station::Grill,
+            ItemKind::Snack(_) => Station::Fryer,
+            ItemKind::Drink(_) => Station::Drink,
+        }
+    }
+}
+
+
+impl OrderLine {
+    fn prep_time(&self) -> Duration {
+        let base_time = self.item.base_time();
+        match self.size {
+            Size::Medium => base_time,
+            Size::Large => base_time + Duration::from_secs(1),
+        }
+    }
+}
+
+
 
 fn random_burger(rng: &mut impl Rng) -> Burger {
     match rng.gen_range(0..5) as usize {
@@ -63,10 +133,9 @@ fn random_burger(rng: &mut impl Rng) -> Burger {
 }
 
 fn random_snack(rng: &mut impl Rng) -> Snack {
-    match rng.gen_range(0..3) {
+    match rng.gen_range(0..2) {
         0 => Snack::Fries,
         1 => Snack::Nuggets,
-        2 => Snack::Salad,
         _ => unreachable!(),
     }
 }
@@ -96,17 +165,17 @@ fn random_order_line(rng: &mut impl Rng) -> OrderLine {
         0 => OrderLine {
             item: ItemKind::Burger(random_burger(rng)),
             quantity,
-            size: None,
+            size: random_size(rng),
         },
         1 => OrderLine {
             item: ItemKind::Snack(random_snack(rng)),
             quantity,
-            size: None,
+            size: random_size(rng),
         },
         2 => OrderLine {
             item: ItemKind::Drink(random_drink(rng)),
             quantity,
-            size: Some(random_size(rng)),
+            size: random_size(rng),
         },
         _ => unreachable!(),
     }
@@ -130,6 +199,39 @@ fn generator_orders(n: u8, seed: u64) -> Vec<Order> {
     orders
 }
 
+async fn worker(name: &'static str, job: Job) {
+    println!("{} started job for order {}", name, job.order_id);
+    tokio::time::sleep(job.duration).await;
+    let prepared_item = PreparedItem {
+        order_id: job.order_id,
+        item: job.item_kind,
+    };
+    let _ = job.if_done.send(prepared_item);
+    println!("{} completed job for order {}", name, job.order_id);
+}
+
+fn station_channel(name: &'static str, workers: usize, buffer: usize) -> mpsc::Sender<Job> {
+    let (tx, rx) = mpsc::channel(buffer);
+    let rx = Arc::new(Mutex::new(rx));
+
+    for _ in 0..workers {
+        let rx = Arc::clone(&rx);
+        spawn(async move {
+            loop {
+                let job = {
+                    let mut rx = rx.lock().await;
+                    rx.recv().await
+                };
+                match job {
+                    Some(job) => worker(name, job).await,
+                    None => break,
+                }
+            }
+        });
+    }
+    tx
+}
+
 fn main() {
     let orders = generator_orders(10, 42);
     for order in orders {
@@ -137,13 +239,13 @@ fn main() {
         for line in order.lines {
             match line.item {
                 ItemKind::Burger(burger) => {
-                    println!("  Burger: {:?}, Quantity: {}", burger, line.quantity);
+                    println!("  Burger: {:?}, Quantity: {}, Size: {:?}", burger, line.quantity, line.size);
                 }
                 ItemKind::Snack(snack) => {
-                    println!("  Snack: {:?}, Quantity: {}", snack, line.quantity);
+                    println!("  Snack: {:?}, Quantity: {}, Size: {:?}", snack, line.quantity, line.size);
                 }
                 ItemKind::Drink(drink) => {
-                    println!("  Drink: {:?}, Quantity: {}", drink, line.quantity);
+                    println!("  Drink: {:?}, Quantity: {}, Size: {:?}", drink, line.quantity, line.size);
                 }
             }
         }
