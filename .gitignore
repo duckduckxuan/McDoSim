@@ -1,23 +1,18 @@
 # Rust build artifacts
 /target/
-**/target/
 
 # Rustfmt backup
 *.rs.bk
 
 # Cargo / rust-analyzer local files
-Cargo.lock
 rust-project.json
 
 # IDE / editor
 .vscode/
 .idea/
-*.iml
 
-# macOS
+# OS
 .DS_Store
-
-# Windows
 Thumbs.db
 *.pdb
 *.exe

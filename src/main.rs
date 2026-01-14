@@ -91,7 +91,7 @@ fn random_size(rng: &mut impl Rng) -> Size {
 
 fn random_order_line(rng: &mut impl Rng) -> OrderLine {
     let item_type = rng.gen_range(0..3);
-    let quantity = rng.gen_range(1..5);
+    let quantity = rng.gen_range(1..3);
     match item_type {
         0 => OrderLine {
             item: ItemKind::Burger(random_burger(rng)),
@@ -113,7 +113,7 @@ fn random_order_line(rng: &mut impl Rng) -> OrderLine {
 }
 
 fn random_order(rng: &mut impl Rng, id: u8) -> Order {
-    let num_lines = rng.gen_range(1..5);
+    let num_lines = rng.gen_range(2..7);
     let mut lines = Vec::new();
     for i in 0..num_lines {
         lines.push(random_order_line(rng));
