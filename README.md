@@ -1,6 +1,7 @@
 # McDoSim
 
 McDoSim is a terminal-based concurrent kitchen simulation written in Rust.  
+
 It models a fast-food restaurant workflow using Tokio async tasks, bounded queues, worker pools, and an event-driven dashboard.
 
 The project is designed as a **concurrency and architecture demonstration**.
@@ -91,7 +92,7 @@ This avoids:
 
 ## Determinism
 
-All random generation uses a fixed seed: `generator_orders(orders_n, 42)`
+All random generation uses a fixed seed via: `generator_orders(orders_n, 42)`, making simulations fully reproducible.
 
 This guarantees:
 
