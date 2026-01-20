@@ -5,8 +5,6 @@ It models a fast-food restaurant workflow using Tokio async tasks, bounded queue
 
 The project is designed as a **concurrency and architecture demonstration**.
 
----
-
 ## Features
 
 - Asynchronous order processing with Tokio
@@ -29,43 +27,32 @@ The project is designed as a **concurrency and architecture demonstration**.
 
 - Deterministic simulation via seeded RNG
 
----
-
 ## Architecture Overview
 
 Each prepared item is an independent job routed to the appropriate station based on its type.
 
-Order Generator
-|
-v
-process_order
-|
-v
-Station Queues (mpsc)
-|
-v
-Workers (Tokio tasks)
-|
-v
-Progress Events
-|
-v
+Order Generator  
+↓  
+process_order  
+↓  
+Station Queues (mpsc)  
+↓  
+Workers (Tokio tasks)  
+↓  
+Progress Events  
+↓  
 Dashboard (event-driven, debounced)
-
----
 
 ## Project Structure
 
-src/
-├── main.rs        // Application entry point
-├── model.rs       // Core domain models and enums
-├── random.rs      // Random order generation
-├── station.rs     // Worker pools, stations, job execution
-├── kitchen.rs     // Order dispatch and orchestration
-├── dashboard.rs   // Terminal dashboard rendering
+src/  
+├── main.rs        // Application entry point  
+├── model.rs       // Core domain models and enums  
+├── random.rs      // Random order generation  
+├── station.rs     // Worker pools, stations, job execution  
+├── kitchen.rs     // Order dispatch and orchestration  
+├── dashboard.rs   // Terminal dashboard rendering  
 └── utils.rs       // Small helper functions
-
----
 
 ## Dashboard Design
 
@@ -84,8 +71,6 @@ This avoids:
 - Terminal flickering
 - Wasted CPU cycles
 
----
-
 ## Concurrency Model
 
 - Each station has:
@@ -100,15 +85,9 @@ This avoids:
   - `oneshot` channel for order completion
   - `mpsc::UnboundedSender` for dashboard updates
 
----
-
 ## Determinism
 
-All random generation uses a fixed seed:
-
-```rust
-generator_orders(orders_n, 42);
-```
+All random generation uses a fixed seed: `generator_orders(orders_n, 42)`
 
 This guarantees:
 
@@ -125,7 +104,9 @@ Requirements:
 
 Run:
 
+```bash
 cargo run
+```
 
 The terminal will display a live dashboard showing station load and order progress.
 Initial orders are also saved to orders.txt for post-run inspection.
