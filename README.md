@@ -46,13 +46,13 @@ Dashboard (event-driven, debounced)
 ## Project Structure
 
 src/  
-├── main.rs        // Application entry point  
-├── model.rs       // Core domain models and enums  
-├── random.rs      // Random order generation  
-├── station.rs     // Worker pools, stations, job execution  
-├── kitchen.rs     // Order dispatch and orchestration  
-├── dashboard.rs   // Terminal dashboard rendering  
-└── utils.rs       // Small helper functions
+├── main.rs       Application entry point  
+├── model.rs      Core domain models and enums  
+├── random.rs     Random order generation  
+├── station.rs    Worker pools, stations, job execution  
+├── kitchen.rs    Order dispatch and orchestration  
+├── dashboard.rs  Terminal dashboard rendering  
+└── utils.rs      Small helper functions
 
 ## Dashboard Design
 
