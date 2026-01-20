@@ -114,6 +114,7 @@ cargo run
 ```
 
 The terminal will display a live dashboard showing station load and order progress.
+
 Initial orders are also saved to `orders.txt` for post-run inspection.
 
 ## Why This Project Exists
