@@ -12,10 +12,11 @@ use crate::{kitchen::{Kitchen, process_order}, random::generator_orders, station
 
 #[tokio::main]
 async fn main() {
+    // Generate random orders
     let orders_n = 10;
     let orders = generator_orders(orders_n, 42);
 
-    // Persist initial orders for post-run inspection
+    // Dump orders to a text file for reference
     let mut order_dump = String::new();
     for order in &orders {
         order_dump.push_str(&format!("Order ID: {}\n", order.id));
@@ -29,18 +30,20 @@ async fn main() {
     }
     std::fs::write("orders.txt", &order_dump).unwrap();
 
-    // Precompute total item count per order
+    // Precompute total items per order for dashboard progress tracking
     let mut totals = vec![0usize; 256];
     for o in &orders {
         totals[o.id as usize] = order_total_items(o);
     }
 
+    // Initialize kitchen stations with concurrency limits
     let kitchen = Kitchen {
         grill: station_channel("Grill", 3, 10),
         fryer: station_channel("Fryer", 2, 10),
         drink: station_channel("Drink", 2, 10),
     };
 
+    // Progress reporting channel
     let (progress_tx, progress_rx) = mpsc::unbounded_channel::<ProgressEvent>();
     let start = Instant::now();
 
@@ -64,6 +67,7 @@ async fn main() {
     }
     drop(progress_tx);
 
+    // Await all order processing tasks
     while let Some(res) = set.join_next().await {
         res.unwrap();
     }

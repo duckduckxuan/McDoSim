@@ -2,7 +2,7 @@ use rand::{Rng, SeedableRng};
 use crate::model::*;
 
 
-// Random generation helpers for simulation
+// Random generation of burger
 fn random_burger(rng: &mut impl Rng) -> Burger {
     match rng.gen_range(0..5) as usize {
         0 => Burger::BigMac,
@@ -14,6 +14,7 @@ fn random_burger(rng: &mut impl Rng) -> Burger {
     }
 }
 
+// Random generation of snack
 fn random_snack(rng: &mut impl Rng) -> Snack {
     match rng.gen_range(0..2) {
         0 => Snack::Fries,
@@ -22,6 +23,7 @@ fn random_snack(rng: &mut impl Rng) -> Snack {
     }
 }
 
+// Random generation of drink
 fn random_drink(rng: &mut impl Rng) -> Drink {
     match rng.gen_range(0..4) {
         0 => Drink::Cola,
@@ -32,6 +34,7 @@ fn random_drink(rng: &mut impl Rng) -> Drink {
     }
 }
 
+// Random generation of size
 fn random_size(rng: &mut impl Rng) -> Size {
     match rng.gen_range(0..2) {
         0 => Size::Medium,
@@ -40,6 +43,7 @@ fn random_size(rng: &mut impl Rng) -> Size {
     }
 }
 
+// Random generation of order line
 fn random_order_line(rng: &mut impl Rng) -> OrderLine {
     let item_type = rng.gen_range(0..3);
     let quantity = rng.gen_range(1..3);
@@ -63,6 +67,7 @@ fn random_order_line(rng: &mut impl Rng) -> OrderLine {
     }
 }
 
+// Random generation of order
 fn random_order(rng: &mut impl Rng, id: u8) -> Order {
     let num_lines = rng.gen_range(2..7);
     let mut lines = Vec::new();
@@ -72,6 +77,7 @@ fn random_order(rng: &mut impl Rng, id: u8) -> Order {
     Order { id, lines }
 }   
 
+// Generate a list of random orders
 pub fn generator_orders(n: u8, seed: u64) -> Vec<Order> {
     let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
     let mut orders = Vec::new();

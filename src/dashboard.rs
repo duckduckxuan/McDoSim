@@ -16,9 +16,11 @@ pub fn redraw_screen(
     // Move cursor to top-left and clear screen
     print!("\x1B[H\x1B[0J");
 
+    // Render elapsed time
     let elapsed = start.elapsed().as_secs_f32();
     println!("Time: {:.1}s\n", elapsed);
 
+    // Render kitchen station status
     println!("Pipeline");
     println!("Station | active/workers | queue/buffer");
     println!("------- | ------------- | -----------");
@@ -34,6 +36,7 @@ pub fn redraw_screen(
         );
     }
 
+    // Render order completion table
     println!("\nOrders");
     println!("id | done/total | burgers | snacks | drinks");
     println!("-- | ---------- | ------ | ------ | ------");
@@ -55,6 +58,7 @@ pub fn redraw_screen(
         );
     }
 
+    // Flush output to terminal
     let _ = io::stdout().flush();
 }
 

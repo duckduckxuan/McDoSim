@@ -1,5 +1,6 @@
 use crate::model::{ItemKind, Order};
 
+
 // Count total items in an order
 pub fn order_total_items(order: &Order) -> usize {
     order.lines.iter().map(|l| l.quantity as usize).sum()
