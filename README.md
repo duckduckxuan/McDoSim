@@ -31,28 +31,32 @@ The project is designed as a **concurrency and architecture demonstration**.
 
 Each prepared item is an independent job routed to the appropriate station based on its type.
 
-Order Generator  
-↓  
-process_order  
-↓  
-Station Queues (mpsc)  
-↓  
-Workers (Tokio tasks)  
-↓  
-Progress Events  
-↓  
+```text
+         Order Generator
+                ↓
+          process_order
+                ↓
+       Station Queues (mpsc)
+                ↓
+       Workers (Tokio tasks)
+                ↓
+         Progress Events
+                ↓
 Dashboard (event-driven, debounced)
+```
 
 ## Project Structure
 
+```text
 src/  
-├── main.rs       Application entry point  
-├── model.rs      Core domain models and enums  
-├── random.rs     Random order generation  
-├── station.rs    Worker pools, stations, job execution  
-├── kitchen.rs    Order dispatch and orchestration  
-├── dashboard.rs  Terminal dashboard rendering  
-└── utils.rs      Small helper functions
+├── main.rs        Application entry point  
+├── model.rs       Core domain models and enums  
+├── random.rs      Random order generation  
+├── station.rs     Worker pools, stations, job execution  
+├── kitchen.rs     Order dispatch and orchestration  
+├── dashboard.rs   Terminal dashboard rendering  
+└── utils.rs       Small helper functions
+```
 
 ## Dashboard Design
 
@@ -100,7 +104,7 @@ This guarantees:
 Requirements:
 
 - Tokio
-- rand
+- Rand
 
 Run:
 
@@ -109,7 +113,7 @@ cargo run
 ```
 
 The terminal will display a live dashboard showing station load and order progress.
-Initial orders are also saved to orders.txt for post-run inspection.
+Initial orders are also saved to `orders.txt` for post-run inspection.
 
 ## Why This Project Exists
 
